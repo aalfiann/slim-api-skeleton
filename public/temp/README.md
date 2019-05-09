@@ -1,0 +1,1 @@
+Your application's temporary files/directories will be written to this directory.
