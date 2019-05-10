@@ -7,8 +7,9 @@
 This is a skeleton to built rest api with slim framework 3. 
 
 ## Dependencies
-- HTTP Cache >> slim/http-cache
 - Logger >> monolog/monolog
+- HTTP Cache >> slim/http-cache
+- ETag Middleware >> aalfiann/slim-etag-middleware
 
 ## Installation
 
