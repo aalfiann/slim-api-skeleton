@@ -1,6 +1,7 @@
 <?php
 use \Psr\Http\Message\ServerRequestInterface as Request;
 use \Psr\Http\Message\ResponseInterface as Response;
+use aalfiann\Slim\Middleware\ETag;
 
     $app->get('/', function (Request $request, Response $response) {
         $data = [
@@ -13,8 +14,12 @@ use \Psr\Http\Message\ResponseInterface as Response;
                 'linkedin' => 'https://www.linkedin.com/in/azizalfian'
             ]
         ];
+        // if you want to use etag
+        $response = $this->cache->withEtag($response, $this['etag']('minute',5));
+        // output response with json formatted
         return $response->withJson($data,200,JSON_PRETTY_PRINT);
-    })->setName("/");
+    })->add(new ETag($container['etag']('minute',5)))
+        ->setName("/");
 
     // Show detail info about routes
     $app->map(['GET','POST'],'/route/info', function(Request $request, Response $response) use($container) {

@@ -236,6 +236,53 @@ $container['fileSearch'] = function ($container) {
     };
 };
 
+/**
+ * etag generator
+ * 
+ * @param string $type          this is the type of update in etag. The value could be minute|hour|day|content.
+ * @param string|int $value     this is the value. For example etag type minute then you can fill it with number.
+ * @return string
+ */
+$container['etag'] = function ($container) {
+    return function ($type='minute', $value=1) {
+        $type = strtolower($type);
+        $interval = true;
+        switch($type){
+            case 'minute':
+                $fix = date('Y-m-d H:');
+                $rate = date('i');
+                $max = 60;
+                if($value>60) $value = 60;
+                break;
+            case 'hour':
+                $fix = date('Y-m-d ');
+                $rate = date('H');
+                $max = 24;
+                if($value>24) $value = 24;
+                break;
+            case 'day':
+                $fix = date('Y-m-');
+                $rate = date('d');
+                $max = date('t',strtotime(date('Y-m')));
+                break;
+            default:
+                $interval = false;
+                if (is_array($value)){
+                    return strtolower(md5(json_encode($value)));
+                }
+                return strtolower(md5($value));
+        }
+        if($interval){
+            $n=0;
+            for ($i = 0; $i <= $max; $i+=$value) {
+                if($i<=$rate) $n++;
+            }
+            return strtolower(md5($fix.$n.trim($_SERVER['REQUEST_URI'],'/')));
+        }
+        return '';
+    };
+};
+
 // Load all modules router files before run
 $modrouters = $container['fileSearch'](dirname(__DIR__).DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR,'router.php');
 foreach ($modrouters as $modrouter) {
