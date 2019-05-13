@@ -24,7 +24,7 @@ $container['environment'] = function () {
 };
 
 // Register component Http-cache
-$container['cache'] = function () {
+$container['httpCache'] = function () {
     return new \Slim\HttpCache\CacheProvider();
 };
 
@@ -125,43 +125,23 @@ $container['client_ip'] = function(){
 };
 
 /**
- * Is match first char (alternative to preg_match)
+ * Is match char (alternative to preg_match)
  * 
  * @param string $match     this is the text to match
  * @param string $string    this is the source text
+ * @param string $method    this is the method to match string. There is first|last|any, default is any. 
  * @return bool
  */
-$container['isMatchFirstChar'] = function ($container) {
-    return function ($match,$string) {
-        if (substr($string, 0, abs(strlen($match))) == $match) return true;
-        return false;
-    };
-};
-
-/**
- * Is match any char (alternative to preg_match)
- * 
- * @param string $match     this is the text to match
- * @param string $string    this is the source text
- * @return bool
- */
-$container['isMatchAnyChar'] = function ($container) {
-    return function ($match,$string){
-        if(strpos($string,$match) !== false) return true;
-        return false;
-    };
-};
-
-/**
- * Is match last char (alternative to preg_match)
- * 
- * @param string $match     this is the text to match
- * @param string $string    this is the source text
- * @return bool
- */
-$container['isMatchLastChar'] = function ($container) {
-    return function ($match,$string){
-        if (substr($string, (-1 * abs(strlen($match)))) == $match) return true;
+$container['isMatchChar'] = function ($container) {
+    return function ($match,$string,$method='any') {
+        switch(strtolower($method)){
+            case 'first':
+                if (substr($string, 0, abs(strlen($match))) == $match) return true;
+            case 'last':
+                if (substr($string, (-1 * abs(strlen($match)))) == $match) return true;
+            default:
+                if(strpos($string,$match) !== false) return true;
+        }
         return false;
     };
 };
@@ -182,7 +162,7 @@ $container['fileSearch'] = function ($container) {
         $fh = opendir($dir);
         if($excludedir !== ''){
             if(is_string($excludedir)){
-                if (!$container['isMatchAnyChar']($excludedir,$dir)){
+                if (!$container['isMatchChar']($excludedir,$dir)){
                     while (($file = readdir($fh)) !== false) {
                         if($file == '.' || $file == '..') continue;
                         $filepath = $dir . DIRECTORY_SEPARATOR . $file;
@@ -192,14 +172,14 @@ $container['fileSearch'] = function ($container) {
                             if($extIsRegex){
                                 if(preg_match($ext, $file)) array_push($files, $filepath);
                             } else {
-                                if($container['isMatchLastChar']($ext,$file)) array_push($files, $filepath);
+                                if($container['isMatchChar']($ext,$file,'last')) array_push($files, $filepath);
                             }
                         }
                     }
                 }
             } else {
                 foreach($excludedir as $dirs){
-                    if (!$container['isMatchAnyChar']($dirs,$dir)){
+                    if (!$container['isMatchChar']($dirs,$dir)){
                         while (($file = readdir($fh)) !== false) {
                             if($file == '.' || $file == '..') continue;
                             $filepath = $dirs . DIRECTORY_SEPARATOR . $file;
@@ -209,7 +189,7 @@ $container['fileSearch'] = function ($container) {
                                 if($extIsRegex){
                                     if(preg_match($ext, $file)) array_push($files, $filepath);
                                 } else {
-                                    if($container['isMatchLastChar']($ext,$file)) array_push($files, $filepath);
+                                    if($container['isMatchChar']($ext,$file,'last')) array_push($files, $filepath);
                                 }
                             }
                         }   
@@ -226,7 +206,7 @@ $container['fileSearch'] = function ($container) {
                     if($extIsRegex){
                         if(preg_match($ext, $file)) array_push($files, $filepath);
                     } else {
-                        if($container['isMatchLastChar']($ext,$file)) array_push($files, $filepath);
+                        if($container['isMatchChar']($ext,$file,'last')) array_push($files, $filepath);
                     }
                 }
             }

@@ -15,7 +15,7 @@ use aalfiann\Slim\Middleware\ETag;
             ]
         ];
         // if you want to use etag
-        $response = $this->cache->withEtag($response, $this['etag']('minute',5));
+        $response = $this->httpCache->withEtag($response, $this['etag']('minute',5));
         // output response with json formatted
         return $response->withJson($data,200,JSON_PRETTY_PRINT);
     })->add(new ETag($container['etag']('minute',5)))
